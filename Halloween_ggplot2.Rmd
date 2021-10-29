@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #x<-c("tidyverse","lubridate")
+#install.packages(x)
 x<-library("tidyverse", "lubridate")
 ```
 
@@ -22,7 +23,7 @@ x<-library("tidyverse", "lubridate")
 
 #Example 1 (Simple Data)
 
-What’s the most popular Halloween candy? To address this question,data was collected by creating a website where participants were shown two fun-sized candies and asked to click on the one that they would prefer to receive. 
+What’s the most popular Halloween candy? To address this question, data was collected by creating a website where participants were shown two fun-sized candies and asked to click on the one that they would prefer to receive. 
 
 ```{r}
 candy<-read_csv("candydata.csv")
@@ -83,14 +84,14 @@ ggplot(candy, aes(sugarpercent)) + geom_histogram(bins="10", col="black", fill="
 ```
 There are not enough observations within each category to use the default of 30 bins. 
 
-Question 1: See what happens when you remove bins=10, color="black", or fill="red"
+Question 1: See what happens when you remove bins=10, color="black", or fill="orange"
 
 #Plotting two variables 
 
 ```{r}
 ggplot(candy, aes(x=sugarpercent, y=winpercent)) + ggtitle("Halloween candy ratings") +
-  ylab("Sugar percent") +
-  xlab("Win percent")
+  ylab("Win percent") +
+  xlab("Sugar percent")
 ```
 
 ```{r}
@@ -142,7 +143,7 @@ attach(chocolate)
 ```
 
 
-3. Let's  make a boxplot for `competitorname`  versus 'frequency' per month.
+3. Let's  make a bargraph for `competitorname`  versus 'frequency' per month.
 
 ```{r}
 #lets see what we have created
