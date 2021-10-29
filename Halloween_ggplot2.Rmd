@@ -1,0 +1,178 @@
+---
+title: "Halloween_ggplot2"
+author: "Nnenna Asidianya"
+date: "10/27/2021"
+output: html_document
+---
+http://rstudio-pubs-static.s3.amazonaws.com/491476_d4246618fe234dcfabb4284dd0f31fcf.html
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting up the packages needed
+
+
+```{r}
+#x<-c("tidyverse","lubridate")
+x<-library("tidyverse", "lubridate")
+```
+
+## Loading data  
+
+#Example 1 (Simple Data)
+
+What’s the most popular Halloween candy? To address this question,data was collected by creating a website where participants were shown two fun-sized candies and asked to click on the one that they would prefer to receive. 
+
+```{r}
+candy<-read_csv("candydata.csv")
+attach(candy)
+
+glimpse(candy)
+```
+
+https://www.kaggle.com/fivethirtyeight/the-ultimate-halloween-candy-power-ranking
+
+## Making sense of the data
+
+Question: For candy corn (observation 9) how can we intepret the measurements for the variable?
+
+1.The candy is not interpreted as chocolatey. 
+2. The candy is not fruity.
+3. Pluribus (i.e. one of many candy's in the bag/box).
+4. The suar percent is 0.906.
+5. Relative to their competitors their percentile rank in price is 0.325. 
+6. The overall percentage of people who prefer candy corn is 38.01096%. 
+
+##Demonstration
+
+This is adapted from Hadley Wickham's R 4 Data Science (1) and the notes from last year's ggplot wokshop (2).The notes can be found here:
+
+1.  https://github.com/hadley/r4ds/blob/master/visualize.Rmd
+2. https://github.com/asidianya/Data-Visualization-/blob/main/Halloween_ggplot.Rmd
+
+
+### Creating a ggplot
+
+Consider the two variables we are working with from above: 
+
+1. `winpercent`, the overall win percentage of people who preferred the candy over the others.
+
+2. `pricepercent`, the price percentile of the candy relative to other candies.
+
+3. `sugarpercent`, the percentile of sugar it falls into relative to other candies 
+
+The first argument of `ggplot()` is the dataset to use in the graph. All we have created is a coordinate system. Without specifying another layer to the plot, we essentially have an empty plot. 
+
+
+#Plot one variable
+
+
+
+
+```{r}
+ggplot(candy, aes(sugarpercent))
+```
+
+
+Let's add some features to the plot. 
+
+```{r}
+
+ggplot(candy, aes(sugarpercent)) + geom_histogram(bins="10", col="black", fill="orange")
+```
+There are not enough observations within each category to use the default of 30 bins. 
+
+Question 1: See what happens when you remove bins=10, color="black", or fill="red"
+
+#Plotting two variables 
+
+```{r}
+ggplot(candy, aes(x=sugarpercent, y=winpercent)) + ggtitle("Halloween candy ratings") +
+  ylab("Sugar percent") +
+  xlab("Win percent")
+```
+
+```{r}
+ggplot(candy, aes(x=sugarpercent, y=winpercent)) + geom_point()+ geom_smooth(color="orange") + ggtitle("Halloween candy ratings") +
+  ylab("Sugar percent") +
+  xlab("Win percent")
+
+```
+
+
+Note: The default is to provide a line of best fit that is blue! 'Col' and 'Color' are often interchangeable. 
+
+#Plotting two graphs in one plot
+
+
+```{r}
+g <- ggplot(candy, aes(y=winpercent))
+g <- g + geom_point(aes(x=pricepercent,colour="price"))
+g <- g + geom_point(aes(x=sugarpercent,colour="sugar"))
+
+g <- g + ylab("Win (%)") + xlab("X") +
+    scale_colour_manual(name="Line Color",
+      values=c(price="black", sugar="orange"))
+ 
+g
+```
+
+It is difficult to pick up much separation in the difference price and sugar have on win percent, even if I use geom_line() rather than geom_point(). 
+
+Question 2: Try to change one feature of the graph (e.g. change the colour, the axes, the line type).
+
+
+##Exercises
+
+Let's glimpse at our data. 
+
+1. How many rows are in `candy`? How many columns?
+
+2. How many levels does `competitorname` variable have?  Glimpse at  the`competitorname` using 'glimpse()' to find out.
+
+```{r}
+#there are a lot of levels of competitorname so we can subset
+
+#the median is 0.35
+
+chocolate<-candy %>% filter(chocolate==1&pluribus==1) %>% mutate(sugar=ifelse(sugarpercent>0.35, "High Sugar", "Low Sugar"))
+
+attach(chocolate)
+```
+
+
+3. Let's  make a boxplot for `competitorname`  versus 'frequency' per month.
+
+```{r}
+#lets see what we have created
+ggplot(chocolate, aes(x=reorder(competitorname, winpercent), y=winpercent)) + geom_segment(aes(xend=reorder(competitorname, winpercent), yend=0), col="red") + geom_point() + coord_flip() 
+```
+
+
+## Facets
+
+One way to add additional variables is with aesthetics. Another way, particularly useful for categorical variables, is to split your plot into facets, subplots that each display one subset of the data. 
+
+To facet your plot by a single variable, use `facet_wrap()`. The first argument of `facet_wrap()` should be a formula, which is the name of your data structure that you wish to subset on. Thus variable that you pass to `facet_wrap()` should be discrete.  
+
+```{r}
+chocolate %>% 
+  group_by(competitorname) %>% 
+  ggplot(aes(competitorname, winpercent)) + 
+  geom_col(aes(col=sugar)) +
+  scale_y_continuous()+facet_wrap(~sugar)+ theme(axis.text.x = element_text(angle = 90))
+  
+
+```
+  
+  Question:
+
+1.  What does the plot above tell us about the winpercent for chocolates perceived to be high versus low sugar?
+
+```{r}
+model<-lm(winpercent~sugar, chocolate)
+summary(model)
+```
+
+
